@@ -40,6 +40,9 @@ class Conta:
         self.cliente = cliente
         self.historico = Historico()
 
+    def saldo(self):
+        return self.saldo
+
     def nova_conta(cliente, numero: int):
         return Conta(0.0, numero, "0000", cliente)
 

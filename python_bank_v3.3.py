@@ -3,10 +3,14 @@ from datetime import date
 
 class Historico:
     def __init__(self):
-        self.transacoes = []
+        self._transacoes = []
 
     def adicionar_transacao(self, transacao):
-        self.transacoes.append(transacao)
+        self._transacoes.append(transacao)
+
+    @property
+    def transacoes(self):
+        return self._transacoes
 
 class Transacao(ABC):
     @abstractmethod
@@ -15,34 +19,41 @@ class Transacao(ABC):
 
 class Deposito(Transacao):
     def __init__(self, valor: float):
-        self.valor = valor
+        self._valor = valor
 
     def registrar(self, conta):
-        conta.saldo += self.valor
+        conta._saldo += self._valor
         conta.historico.adicionar_transacao(self)
+
+    @property
+    def valor(self):
+        return self._valor
 
 class Saque(Transacao):
     def __init__(self, valor: float):
-        self.valor = valor
+        self._valor = valor
 
     def registrar(self, conta):
-        if conta.saldo >= self.valor:
-            conta.saldo -= self.valor
+        if conta._saldo >= self._valor:
+            conta._saldo -= self._valor
             conta.historico.adicionar_transacao(self)
             return True
         return False
 
+    @property
+    def valor(self):
+        return self._valor
+
 class Conta:
     def __init__(self, saldo: float, numero: int, agencia: str, cliente):
-        self.saldo = saldo
-        self.numero = numero
-        self.agencia = agencia
-        self.cliente = cliente
-        self.historico = Historico()
+        self._saldo = saldo
+        self._numero = numero
+        self._agencia = agencia
+        self._cliente = cliente
+        self._historico = Historico()
 
-    def saldo(self):
-        return self.saldo
 
+    @staticmethod
     def nova_conta(cliente, numero: int):
         return Conta(0.0, numero, "0000", cliente)
 
@@ -55,36 +66,84 @@ class Conta:
         transacao.registrar(self)
         return True
 
+    @property
+    def saldo(self):
+        return self._saldo
+
+    @property
+    def numero(self):
+        return self._numero
+
+    @property
+    def agencia(self):
+        return self._agencia
+
+    @property
+    def cliente(self):
+        return self._cliente
+
+    @property
+    def historico(self):
+        return self._historico
+
 class Cliente:
     def __init__(self, endereco: str):
-        self.endereco = endereco
-        self.contas = []
+        self._endereco = endereco
+        self._contas = []
 
     def realizar_transacao(self, conta: Conta, transacao: Transacao):
         transacao.registrar(conta)
 
     def adicionar_conta(self, conta: Conta):
-        self.contas.append(conta)
+        self._contas.append(conta)
+
+    @property
+    def endereco(self):
+        return self._endereco
+
+    @property
+    def contas(self):
+        return self._contas
 
 class PessoaFisica(Cliente):
     def __init__(self, cpf: str, nome: str, data_nascimento: date, endereco: str):
         super().__init__(endereco)
-        self.cpf = cpf
-        self.nome = nome
-        self.data_nascimento = data_nascimento
+        self._cpf = cpf
+        self._nome = nome
+        self._data_nascimento = data_nascimento
+
+    @property
+    def cpf(self):
+        return self._cpf
+
+    @property
+    def nome(self):
+        return self._nome
+
+    @property
+    def data_nascimento(self):
+        return self._data_nascimento
 
 class ContaCorrente(Conta):
     def __init__(self, saldo: float, numero: int, agencia: str, cliente, limite: float, limite_saques: int):
         super().__init__(saldo, numero, agencia, cliente)
-        self.limite = limite
-        self.limite_saques = limite_saques
+        self._limite = limite
+        self._limite_saques = limite_saques
+
+    @property
+    def limite(self):
+        return self._limite
+
+    @property
+    def limite_saques(self):
+        return self._limite_saques
 
 class Banco:
     def __init__(self):
-        self.usuarios = {}
-        self.contas = []
-        self.numero_conta = 1000
-        self.AGENCIA = "0001"
+        self._usuarios = {}
+        self._contas = []
+        self._numero_conta = 1000
+        self._AGENCIA = "0001"
 
     def menu(self):
         print("Selecione uma opção:")
@@ -98,7 +157,7 @@ class Banco:
 
     def selecionar_conta(self):
         numero_conta = int(input("Digite o número da conta: "))
-        for conta in self.contas:
+        for conta in self._contas:
             if conta.numero == numero_conta:
                 return conta
         print("Conta não encontrada.")
@@ -116,7 +175,7 @@ class Banco:
     def criar_usuario(self):
         cpf = input("Qual o seu CPF? ")
 
-        if cpf in self.usuarios:
+        if cpf in self._usuarios:
             print("CPF já existente. Tente novamente!")
             return
 
@@ -124,7 +183,7 @@ class Banco:
         nome = input("Qual o seu nome? ")
         endereco = input("Qual o seu endereço? ")
 
-        self.usuarios[cpf] = PessoaFisica(cpf, nome, data_nasc, endereco)
+        self._usuarios[cpf] = PessoaFisica(cpf, nome, data_nasc, endereco)
         print("Usuário criado com sucesso!")
 
     def criar_conta(self):
@@ -132,17 +191,17 @@ class Banco:
 
         if cpf == '':
             return None
-        if cpf not in self.usuarios:
+        if cpf not in self._usuarios:
             print("CPF inválido. Tente novamente! ou de Enter para retornar")
             return self.criar_conta()
 
-        cliente = self.usuarios[cpf]
-        conta = ContaCorrente(0.0, self.numero_conta, self.AGENCIA, cliente, limite=1000, limite_saques=3)
+        cliente = self._usuarios[cpf]
+        conta = ContaCorrente(0.0, self._numero_conta, self._AGENCIA, cliente, limite=1000, limite_saques=3)
         cliente.adicionar_conta(conta)
-        self.contas.append(conta)
-        print(f"Agência: {self.AGENCIA}", f"Conta: {self.numero_conta} ", f"CPF: {cpf}")
+        self._contas.append(conta)
+        print(f"Agência: {self._AGENCIA}", f"Conta: {self._numero_conta} ", f"CPF: {cpf}")
         print("Conta criada com sucesso!")
-        self.numero_conta += 1
+        self._numero_conta += 1
         return conta
 
     def executar(self):
