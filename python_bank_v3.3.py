@@ -153,7 +153,7 @@ class Banco:
         print("4 - Criar conta")
         print("5 - Criar usuário")
         print("6 - Sair")
-        return int(input())
+        return input()
 
     def selecionar_conta(self):
         numero_conta = int(input("Digite o número da conta: "))
@@ -207,6 +207,11 @@ class Banco:
     def executar(self):
         while True:
             opcao = self.menu()
+            try:
+                opcao = int(opcao)
+            except ValueError:
+                print("Opção inválida. Deve ser um número inteiro.")
+                continue
 
             if opcao == 1:
                 valor = float(input("Qual o valor que deseja sacar? "))
